@@ -1,0 +1,46 @@
+version: '2'
+services:
+  app:
+    build: .
+    ports:
+      - '80:80'
+    depends_on:
+      - db
+    volumes:
+      - ./:/var/www/html/boltsite:rw
+  db:
+    build:
+      context: ./docker/db
+      dockerfile: ./Dockerfile
+    environment:
+      - MYSQL_DATABASE=boltsite
+      # You should definitely change the password in production
+      - MYSQL_PASSWORD=boltsite
+      # - MYSQL_RANDOM_ROOT_PASSWORD=true
+      - MYSQL_ROOT_PASSWORD=boltsite
+      - MYSQL_USER=boltsite
+    volumes:
+      - db:/var/lib/mysql:rw
+      # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
+      # - ./docker/db/data:/var/lib/mysql:rw
+  maildev:
+    build:
+      context: ./docker/maildev
+      dockerfile: ./Dockerfile
+    depends_on:
+      - app
+    ports:
+      - "1080:80"
+  phpmyadmin:
+    build:
+      context: ./docker/phpmyadmin
+      dockerfile: ./Dockerfile
+    depends_on:
+      - db
+      - app
+    ports:
+      - "8181:80"
+
+volumes:
+  db: {}
+  app: {}
